@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "start:debug": "nodemon --inspect-brk=3000 src/index.js"
   },
   "dependencies": {
     "aws-sdk": "^2.927.0",
