@@ -85,7 +85,7 @@ routes.get('/appointments', async (req, res) => {
     if (myAppointments.length > 0)
         return res.status(200).send(myAppointments);
 
-    return res.status(404).send({ error: 'No appointment found', user });
+    return res.status(404).send({ error: 'No appointment found' });
 });
 
 module.exports = routes;
