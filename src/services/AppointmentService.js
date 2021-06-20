@@ -10,15 +10,7 @@ class AppointmentService {
 
     async search(token) {
         const user = token.payload.sub;
-        let appointments = await Appointment.find({ user });
-        return appointments = appointments.map(ap => {
-            ap.datetime = ap.year + '-' + ap.month + '-' + ap.day + ' ' + ap.hour + ':' + '00';
-            return {
-                datetime: ap.datetime,
-                barber: ap.barber,
-                service: ap.service
-            }
-        });
+        return await Appointment.find({ user });
     }
 }
 
