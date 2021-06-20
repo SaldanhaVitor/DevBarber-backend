@@ -65,12 +65,8 @@ routes.post('/appointment/:token', async (req, res) => {
     const { body } = req;
     const decoded = jwt.decode(token, { complete: true });
     body.user = decoded.payload.sub;
-    try {
-        const appoitment = await Appointment.create(body);
-        return res.status(200).send(appoitment);
-    } catch (err) {
-        return res.send(400, err);
-    }
+    const appoitment = await Appointment.create(body);
+    return res.status(200).send(appoitment);
 });
 
 routes.get('/appointments/:token', async (req, res) => {
@@ -78,7 +74,7 @@ routes.get('/appointments/:token', async (req, res) => {
     const decoded = jwt.decode(token, { complete: true });
     const user = decoded.payload.sub;
     const myAppointments = await Appointment.find({ user });
-    if (myAppointments.lenght > 0)
+    if (myAppointments.length > 0)
         return res.status(200).send(myAppointments);
     return res.status(404).send({ message: 'No appointment found', user });
 });
