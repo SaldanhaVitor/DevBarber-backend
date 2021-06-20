@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const AvailabilitySchema = new mongoose.Schema({
-    userId: {
+    barberId: {
         type: Number,
         required: true,
         unique: true
