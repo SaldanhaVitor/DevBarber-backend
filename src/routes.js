@@ -3,9 +3,10 @@ const multer = require('multer');
 const multerConfig = require('./config/multer');
 const Post = require('./models/Post');
 const Availability = require('./models/Availability');
-const Appointment = require('./models/Appointment');
-
-const jwt = require('jsonwebtoken');
+const DecodeService = require('./services/DecodeService');
+const AppointmentService = require('./services/AppointmentService');
+const DecodeToken = new DecodeService();
+const AppointmentServices = new AppointmentService();
 
 routes.post('/posts', multer(multerConfig).single('file'), async (req, res) => {
     const { originalname: name, size, key, location: url = '' } = req.file;
@@ -37,9 +38,9 @@ routes.delete('/posts/:id', async (req, res) => {
 })
 
 routes.post('/availability', async (req, res) => {
-    const { userId, available } = req.body;
+    const { barberId, available } = req.body;
     const barberAvailable = await Availability.create({
-        userId,
+        barberId,
         available
     });
     return res.status(201).send(barberAvailable);
@@ -56,27 +57,35 @@ routes.get('/availability/:barberId', async (req, res) => {
 
 routes.post('/decode', async (req, res) => {
     const { token } = req.body;
-    const decoded = jwt.decode(token, { complete: true });
-    return res.status(200).send(decoded);
+
+    const decoded = await DecodeToken.execute(token);
+
+    if (decoded)
+        return res.status(200).send(decoded);
+
+    return res.status(400).send({ error: 'errorMessage' });
 });
 
-routes.post('/appointment/:token', async (req, res) => {
-    const { token } = req.params;
+routes.post('/appointment', async (req, res) => {
+    const { token } = req.headers;
     const { body } = req;
-    const decoded = jwt.decode(token, { complete: true });
-    body.user = decoded.payload.sub;
-    const appoitment = await Appointment.create(body);
-    return res.status(200).send(appoitment);
+
+    const decoded = await DecodeToken.execute(token);
+    const appointment = await AppointmentServices.create(decoded, body);
+
+    return res.status(200).send(appointment);
 });
 
-routes.get('/appointments/:token', async (req, res) => {
-    const { token } = req.params;
-    const decoded = jwt.decode(token, { complete: true });
-    const user = decoded.payload.sub;
-    const myAppointments = await Appointment.find({ user });
+routes.get('/appointments', async (req, res) => {
+    const { token } = req.headers;
+
+    const decoded = await DecodeToken.execute(token);
+    const myAppointments = await AppointmentServices.search(decoded);
+
     if (myAppointments.length > 0)
         return res.status(200).send(myAppointments);
-    return res.status(404).send({ message: 'No appointment found', user });
+
+    return res.status(404).send({ error: 'No appointment found', user });
 });
 
 module.exports = routes;
