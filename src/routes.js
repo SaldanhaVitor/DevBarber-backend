@@ -72,8 +72,10 @@ routes.post('/appointment', async (req, res) => {
 
     const decoded = await DecodeToken.execute(token);
     const appointment = await AppointmentServices.create(decoded, body);
+    if (appointment)
+        return res.status(201).send({ appointment, status: 201 });;
 
-    return res.status(200).send(appointment);
+    return res.status(400).send({ error: 'Some error occur', status: 400 });;
 });
 
 routes.get('/appointments', async (req, res) => {
