@@ -65,8 +65,12 @@ routes.post('/appointment/:token', async (req, res) => {
     const { body } = req;
     const decoded = jwt.decode(token, { complete: true });
     body.user = decoded.payload.sub;
-    const appoitment = await Appointment.create(body);
-    return res.status(200).send(appoitment);
+    try {
+        const appoitment = await Appointment.create(body);
+        return res.status(200).send(appoitment);
+    } catch (err) {
+        return res.send(400, err);
+    }
 });
 
 routes.get('/appointments/:token', async (req, res) => {
