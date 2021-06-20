@@ -10,7 +10,15 @@ class AppointmentService {
 
     async search(token) {
         const user = token.payload.sub;
-        return await Appointment.find({ user });
+        const myAppointments = await Appointment.find({ user });
+
+        if (myAppointments.length > 0) {
+            myAppointments.sort(function (a, b) {
+                return (a.created_at > b.created_at) ? -1 : ((a.created_at < b.created_at) ? 1 : 0);
+            });
+        }
+
+        return myAppointments;
     }
 }
 
