@@ -90,4 +90,15 @@ routes.get('/appointments', async (req, res) => {
     return res.status(404).send({ error: 'No appointment found' });
 });
 
+routes.put('/appointment/:appointmentId', async (req, res) => {
+    const { token } = req.headers;
+    const { appointmentId } = req.params;
+    const { canceled } = req.body;
+
+    const decoded = await DecodeToken.execute(token);
+    const myAppointments = await AppointmentServices.update(appointmentId, decoded, canceled);
+
+    return res.status(200).send(myAppointments);
+});
+
 module.exports = routes;

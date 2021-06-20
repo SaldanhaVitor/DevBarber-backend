@@ -20,6 +20,16 @@ class AppointmentService {
 
         return myAppointments;
     }
+
+    async update(appointmentId, token, boolean) {
+        const user = token.payload.sub;
+
+        await Appointment.findOneAndUpdate(
+            { appointment_id: appointmentId, user },
+            { canceled: boolean }
+        );
+        return await Appointment.findOne({ appointment_id: appointmentId, user });
+    }
 }
 
 module.exports = AppointmentService;
