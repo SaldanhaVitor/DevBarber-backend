@@ -39,7 +39,7 @@ const AppointmentSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    canceled: {
+    old: {
         type: Boolean,
         default: false
     }

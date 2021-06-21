@@ -18,17 +18,39 @@ class AppointmentService {
             });
         }
 
-        return myAppointments;
+        return this.updateAppointmentStatus(myAppointments);
     }
 
-    async update(appointmentId, token, boolean) {
+    async delete(appointmentId, token) {
         const user = token.payload.sub;
 
-        await Appointment.findOneAndUpdate(
-            { appointment_id: appointmentId, user },
-            { canceled: boolean }
+        await Appointment.remove(
+            { appointment_id: appointmentId, user }
         );
-        return await Appointment.findOne({ appointment_id: appointmentId, user });
+
+        return await this.search(token);
+    }
+
+    async updateAppointmentStatus(appointments) {
+        for (const ap of appointments) {
+            if (!ap.old) {
+                const appointmentDate = new Date(ap.year, ap.month, ap.day);
+                let dateNow = new Date();
+                const year = dateNow.getFullYear();
+                const month = dateNow.getMonth() + 1;
+                const day = dateNow.getDate();
+
+                dateNow = new Date(parseInt(year), parseInt(month), parseInt(day));
+
+                if (dateNow.getTime() > appointmentDate.getTime()){
+                    await Appointment.findOneAndUpdate(
+                        { appointment_id: ap.appointment_id },
+                        { old: true }
+                    )
+                }
+            }
+        }
+        return appointments;
     }
 }
 
