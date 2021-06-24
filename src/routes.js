@@ -2,11 +2,14 @@ const routes = require('express').Router();
 const multer = require('multer');
 const multerConfig = require('./config/multer');
 const Post = require('./models/Post');
-const Availability = require('./models/Availability');
+
 const DecodeService = require('./services/DecodeService');
 const AppointmentService = require('./services/AppointmentService');
+const AvailabilityService = require('./services/AvailabilityService');
+
 const DecodeToken = new DecodeService();
 const AppointmentServices = new AppointmentService();
+const AvailabilityServices = new AvailabilityService();
 
 routes.post('/posts', multer(multerConfig).single('file'), async (req, res) => {
     const { originalname: name, size, key, location: url = '' } = req.file;
@@ -39,7 +42,7 @@ routes.delete('/posts/:id', async (req, res) => {
 
 routes.post('/availability', async (req, res) => {
     const { barberId, available } = req.body;
-    const barberAvailable = await Availability.create({
+    const barberAvailable = await AvailabilityServices.create({
         barberId,
         available
     });
@@ -48,7 +51,7 @@ routes.post('/availability', async (req, res) => {
 
 routes.get('/availability/:barberId', async (req, res) => {
     const { barberId } = req.params;
-    const barberAvailable = await Availability.find({ barberId });
+    const barberAvailable = await AvailabilityServices.find(barberId);
     if (barberAvailable.length > 0) {
         return res.status(200).send(...barberAvailable);
     }
@@ -72,9 +75,10 @@ routes.post('/appointment', async (req, res) => {
 
     const decoded = await DecodeToken.execute(token);
     const appointment = await AppointmentServices.create(decoded, body);
-    if (appointment)
-        return res.status(201).send({ ...appointment._doc, status: 201 });
-
+    if (appointment) {
+        const { available } = await AvailabilityServices.update(body);
+        return res.status(201).send({ ...appointment._doc, status: 201, newAvailable: available });
+    }
     return res.status(400).send({ error: 'Some error occur', status: 400 });;
 });
 
@@ -93,9 +97,11 @@ routes.get('/appointments', async (req, res) => {
 routes.delete('/appointment/:appointmentId', async (req, res) => {
     const { token } = req.headers;
     const { appointmentId } = req.params;
+    const body = req.body;
 
     const decoded = await DecodeToken.execute(token);
     const myAppointments = await AppointmentServices.delete(appointmentId, decoded);
+    await AvailabilityServices.revert(body);
 
     return res.status(200).send(myAppointments);
 });
