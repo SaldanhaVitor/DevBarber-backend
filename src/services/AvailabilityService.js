@@ -54,6 +54,15 @@ class AvailabilityService {
 
             if (barberDate.length > 0) {
                 barberDate[0].hours.push(hour);
+                function compare(a, b) {
+                    var time1 = parseFloat(a.replace(':', '.').replace(/[^\d.-]/g, ''));
+                    var time2 = parseFloat(b.replace(':', '.').replace(/[^\d.-]/g, ''));
+                    if (a.match(/.*pm/)) time1 += 12; if (b.match(/.*pm/)) time2 += 12;
+                    if (time1 < time2) return -1;
+                    if (time1 > time2) return 1;
+                    return 0;
+                }
+                barberDate[0].hours.sort(compare);
             }
 
             await Availability.findOneAndUpdate(
