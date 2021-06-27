@@ -1,11 +1,17 @@
 const Appointment = require('../models/Appointment');
+const UserService = require('../services/UserService');
+const UserServices = new UserService();
 
 class AppointmentService {
     constructor() { }
 
     async create(token, body) {
         body.user = token.payload.sub;
-        return await Appointment.create(body);
+        const createAppointment = await Appointment.create(body);
+        if (createAppointment)
+            await UserServices.updateUserAppointments(user, true);
+
+        return createAppointment;
     }
 
     async search(token) {
@@ -27,6 +33,7 @@ class AppointmentService {
         await Appointment.remove(
             { appointment_id: appointmentId, user }
         );
+        await UserServices.updateUserAppointments(user, false);
 
         return await this.search(token);
     }
@@ -42,7 +49,7 @@ class AppointmentService {
 
                 dateNow = new Date(parseInt(year), parseInt(month), parseInt(day));
 
-                if (dateNow.getTime() > appointmentDate.getTime()){
+                if (dateNow.getTime() > appointmentDate.getTime()) {
                     await Appointment.findOneAndUpdate(
                         { appointment_id: ap.appointment_id },
                         { old: true }
