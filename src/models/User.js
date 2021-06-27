@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        appointmens: {
+        appointments: {
             type: Number,
             default: 0
         },
