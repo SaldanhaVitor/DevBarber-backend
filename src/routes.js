@@ -6,10 +6,12 @@ const Post = require('./models/Post');
 const DecodeService = require('./services/DecodeService');
 const AppointmentService = require('./services/AppointmentService');
 const AvailabilityService = require('./services/AvailabilityService');
+const UserService = require('./services/UserService');
 
 const DecodeToken = new DecodeService();
 const AppointmentServices = new AppointmentService();
 const AvailabilityServices = new AvailabilityService();
+const UserServices = new UserService();
 
 routes.post('/posts', multer(multerConfig).single('file'), async (req, res) => {
     const { originalname: name, size, key, location: url = '' } = req.file;
@@ -105,5 +107,27 @@ routes.delete('/appointment/:appointmentId', async (req, res) => {
 
     return res.status(200).send(myAppointments);
 });
+
+routes.post('/user/create', async (req, res) => {
+    const data = req.body;
+    const user = await UserServices.create(data);
+    if (user) {
+        return res.status(201).send(user);
+    }
+    return res.status(400).send({ error: 'Some error occur', status: 400 });;
+});
+
+routes.get('/user', async (req, res) => {
+    const { token } = req.headers;
+    const { payload } = await DecodeToken.execute(token);
+    const id = payload.sub;
+
+    const user = await UserServices.getUser(id);
+    if (user) {
+        return res.status(200).send(user);
+    }
+    return res.status(404).send({ error: 'User not found' });
+});
+
 
 module.exports = routes;
