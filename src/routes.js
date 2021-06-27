@@ -78,6 +78,7 @@ routes.post('/appointment', async (req, res) => {
     const decoded = await DecodeToken.execute(token);
     const appointment = await AppointmentServices.create(decoded, body);
     if (appointment) {
+        await UserServices.updateUserAppointments(decoded.payload.sub, true);
         const { available } = await AvailabilityServices.update(body);
         return res.status(201).send({ ...appointment._doc, status: 201, newAvailable: available });
     }
@@ -103,6 +104,7 @@ routes.delete('/appointment/:appointmentId', async (req, res) => {
 
     const decoded = await DecodeToken.execute(token);
     const myAppointments = await AppointmentServices.delete(appointmentId, decoded);
+    await UserServices.updateUserAppointments(decoded.payload.sub, false);
     await AvailabilityServices.revert(body);
 
     return res.status(200).send(myAppointments);

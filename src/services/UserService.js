@@ -14,20 +14,20 @@ class UserService {
     async updateUserAppointments(id, boolean) {
         if (boolean) {
             let user = await this.getUser(id)
-            user.data.appointments = user.data.appointments + 1;
+            const appointments = user.data.appointments + 1;
 
             await User.findOneAndUpdate(
                 { 'data.id': id },
-                { user }
+                { 'data.appointments': appointments }
             )
 
         } else {
             let user = await this.getUser(id)
-            user.data.appointments = user.data.appointments - 1;
+            const appointments = user.data.appointments - 1;
 
             await User.findOneAndUpdate(
                 { 'data.id': id },
-                { user }
+                { 'data.appointments': appointments }
             )
         }
     }

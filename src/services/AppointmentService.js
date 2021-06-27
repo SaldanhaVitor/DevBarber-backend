@@ -1,17 +1,11 @@
 const Appointment = require('../models/Appointment');
-const UserService = require('../services/UserService');
-const UserServices = new UserService();
 
 class AppointmentService {
     constructor() { }
 
     async create(token, body) {
         body.user = token.payload.sub;
-        const createAppointment = await Appointment.create(body);
-        if (createAppointment)
-            await UserServices.updateUserAppointments(user, true);
-
-        return createAppointment;
+        return await Appointment.create(body);
     }
 
     async search(token) {
@@ -33,7 +27,6 @@ class AppointmentService {
         await Appointment.remove(
             { appointment_id: appointmentId, user }
         );
-        await UserServices.updateUserAppointments(user, false);
 
         return await this.search(token);
     }
