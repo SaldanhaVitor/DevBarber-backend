@@ -18,6 +18,14 @@ const UserSchema = new mongoose.Schema({
         email: {
             type: String,
             required: true
+        },
+        appointmens: {
+            type: Number,
+            default: 0
+        },
+        avaliacao: {
+            type: Number,
+            default: 0
         }
     },
     token: {
