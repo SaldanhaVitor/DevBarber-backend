@@ -4,6 +4,14 @@ class AvailabilityService {
     constructor() { }
 
     async create(body) {
+        const { barberId, available } = body;
+        const barber = await this.find(barberId);
+        if (barber.length > 0)
+            return await Availability.findOneAndUpdate(
+                { barberId },
+                { available }
+            );
+
         return await Availability.create(body);
     }
 
